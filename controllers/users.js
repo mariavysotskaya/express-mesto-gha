@@ -10,7 +10,7 @@ const getUsers = (_req, res) => {
 };
 
 const getUser = (req, res) => {
-  User.findOne({ _id: req.params.userId })
+  User.findById({ _id: req.params.userId })
     .then((data) => {
       if (!data) {
         throw new Error();
@@ -19,10 +19,11 @@ const getUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Пользователь по указанному _id не найден' });
+        res.status(DATA_ERROR_CODE).send({ message: 'Указан несуществующий _id' });
       }
-      return res.status(DEFAULT_ERROR_CODE).send({ message: 'Ошибка сервера' });
-    });
+      return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Пользователь по указанному _id не найден' });
+    })
+    .catch(() => res.status(DEFAULT_ERROR_CODE).send({ message: 'Ошибка сервера' }));
 };
 
 const createUser = (req, res) => {

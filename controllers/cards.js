@@ -26,8 +26,19 @@ const createCard = (req, res) => {
 
 const deleteCard = (req, res) => {
   Card.findOneAndRemove({ _id: req.params.cardId })
-    .then(() => res.send({ message: 'Карточка удалена' }))
-    .catch(() => res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Карточка с указанным _id не найдена' }));
+    .then((card) => {
+      if (!card) {
+        throw new Error();
+      }
+      return res.send({ message: 'Карточка удалена' });
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(DATA_ERROR_CODE).send({ message: 'Передан некорректный _id карточки' });
+      }
+      res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Не найдена карточка с указанным _id' });
+    })
+    .catch(() => res.status(DEFAULT_ERROR_CODE).send({ message: 'Ошибка сервера' }));
 };
 
 const likeCard = (req, res) => {
