@@ -30,13 +30,7 @@ const getUser = (req, res) => {
 const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
-    .then((user) => {
-      if (!user) {
-        res.status(DEFAULT_ERROR_CODE).send({ message: 'Не удалось создать пользователя' });
-        return;
-      }
-      res.status(201).send({ user });
-    })
+    .then((user) => res.status(201).send({ user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(DATA_ERROR_CODE).send({ message: 'Переданы невалидные значения' });
