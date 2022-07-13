@@ -31,7 +31,7 @@ app.patch('*', () => {
   throw new NotFoundError('Страница не найдена');
 });
 
-app.use(errors);
+app.use(errors());
 
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
