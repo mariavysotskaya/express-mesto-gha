@@ -87,9 +87,7 @@ const createUser = (req, res, next) => {
             User.create({
               email, password: hash, name, about, avatar,
             })
-              .then((data) => res.status(201).send({
-                email: data.email, name: data.name, about: data.about, avatar: data.avatar,
-              }))
+              .then((data) => res.status(201).send({ email: data.email }))
               .catch((err) => {
                 if (err.name === 'ValidationError') {
                   next(new DataError('Переданы невалидные значения'));
