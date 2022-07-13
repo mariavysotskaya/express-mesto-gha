@@ -6,7 +6,7 @@ const User = require('../models/user');
 const DataError = require('../errors/data-err');
 const UnauthorizedError = require('../errors/unauthorized-err');
 const NotFoundError = require('../errors/not-found-err');
-const ForbiddenError = require('../errors/forbidden-err');
+const ConflictError = require('../errors/conflict-err');
 
 const options = { new: true, runValidators: true };
 
@@ -57,7 +57,8 @@ const getUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new DataError('Указан невалидный _id');
+        next(new DataError('Указан невалидный _id'));
+        return;
       }
       next(err);
     });
@@ -65,7 +66,7 @@ const getUser = (req, res, next) => {
 
 const createUser = (req, res, next) => {
   const {
-    name, about, avatar, email, password,
+    email, password, name, about, avatar,
   } = req.body;
 
   if (!email || !password) {
@@ -79,7 +80,7 @@ const createUser = (req, res, next) => {
   User.findOne({ email })
     .then((user) => {
       if (user) {
-        throw new ForbiddenError('Такой пользователь уже существует');
+        throw new ConflictError('Такой пользователь уже существует');
       } else {
         bcrypt.hash(password, 10)
           .then((hash) => {
@@ -89,13 +90,16 @@ const createUser = (req, res, next) => {
               .then((data) => res.status(201).send({ data }))
               .catch((err) => {
                 if (err.name === 'ValidationError') {
-                  throw new DataError('Переданы невалидные значения');
+                  next(new DataError('Переданы невалидные значения'));
+                  return;
                 }
                 next(err);
               });
-          });
+          })
+          .catch(next);
       }
-    });
+    })
+    .catch(next);
 };
 
 const updateUser = (req, res, next) => {
@@ -109,10 +113,12 @@ const updateUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new DataError('Переданы невалидные значения');
+        next(new DataError('Переданы невалидные значения'));
+        return;
       }
       if (err.name === 'CastError') {
-        throw new DataError('Передан некорректный _id');
+        next(new DataError('Передан некорректный _id'));
+        return;
       }
       next(err);
     });
@@ -129,10 +135,12 @@ const updateAvatar = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new DataError('Переданы невалидные значения');
+        next(new DataError('Переданы невалидные значения'));
+        return;
       }
       if (err.name === 'CastError') {
-        throw new DataError('Передан некорректный _id');
+        next(new DataError('Передан некорректный _id'));
+        return;
       }
       next(err);
     });

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { Joi } = require('celebrate');
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -36,3 +37,33 @@ const userSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('user', userSchema);
+
+module.exports.userSchemaValidation = {
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string(),
+  }),
+};
+
+module.exports.userCredentialsSchemaValidation = {
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
+  }),
+};
+
+module.exports.userMainInfoSchemaValidation = {
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+  }),
+};
+
+module.exports.userAvatarSchemaValidation = {
+  body: Joi.object().keys({
+    avatar: Joi.string(),
+  }),
+};

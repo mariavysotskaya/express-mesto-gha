@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { Joi } = require('celebrate');
 
 const cardSchema = new mongoose.Schema({
   name: {
@@ -10,6 +11,12 @@ const cardSchema = new mongoose.Schema({
   link: {
     type: String,
     required: [true, 'Поле обязательно'],
+    validate: {
+      validator(v) {
+        return /https?:\/\/\S/.test(v);
+      },
+      message: 'Ссылка указана некорректно',
+    },
   },
   owner: {
     type: mongoose.ObjectId,
@@ -26,3 +33,10 @@ const cardSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('card', cardSchema);
+
+module.exports.cardMainInfoSchemaValidation = {
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    link: Joi.string().required(),
+  }),
+};
