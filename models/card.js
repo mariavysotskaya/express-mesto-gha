@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { Joi } = require('celebrate');
+const validator = require('validator');
 
 const cardSchema = new mongoose.Schema({
   name: {
@@ -12,18 +13,18 @@ const cardSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Поле обязательно'],
     validate: {
-      validator(v) {
-        return /https?:\/\/\S/.test(v);
-      },
+      validator: (value) => (validator.isURL(value, { require_protocol: true })),
       message: 'Ссылка указана некорректно',
     },
   },
   owner: {
     type: mongoose.ObjectId,
+    ref: 'user',
     required: [true, 'Поле обязательно'],
   },
   likes: {
     type: [mongoose.ObjectId],
+    ref: 'user',
     default: [],
   },
   createdAt: {
@@ -32,11 +33,18 @@ const cardSchema = new mongoose.Schema({
   },
 });
 
+const validateURL = (value) => {
+  if (!validator.isURL(value, { require_protocol: true })) {
+    throw new Error('Ссылка указана некорректно');
+  }
+  return value;
+};
+
 module.exports = mongoose.model('card', cardSchema);
 
 module.exports.cardMainInfoSchemaValidation = {
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
-    link: Joi.string().required().regex(/https?:\/\/\S/),
+    link: Joi.string().required().custom(validateURL),
   }),
 };

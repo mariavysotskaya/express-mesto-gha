@@ -1,4 +1,3 @@
-const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -12,14 +11,6 @@ const options = { new: true, runValidators: true };
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
-
-  if (!email || !password) {
-    throw new DataError('Не заполнено обязательное поле');
-  }
-
-  if (!validator.isEmail(email)) {
-    throw new DataError('Некорректно указан email');
-  }
 
   User.findOne({ email }).select('+password')
     .then((user) => {
@@ -68,14 +59,6 @@ const createUser = (req, res, next) => {
   const {
     email, password, name, about, avatar,
   } = req.body;
-
-  if (!email || !password) {
-    throw new DataError('Не заполнено обязательное поле');
-  }
-
-  if (!validator.isEmail(email)) {
-    throw new DataError('Некорректно указан email');
-  }
 
   User.findOne({ email })
     .then((user) => {

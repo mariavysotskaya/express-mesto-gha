@@ -1,11 +1,16 @@
 const mongoose = require('mongoose');
 const { Joi } = require('celebrate');
+const validator = require('validator');
 
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
     unique: true,
+    validate: {
+      validator: (value) => validator.isEmail(value),
+      message: 'Некорректно указан email',
+    },
   },
   password: {
     type: String,
@@ -27,14 +32,19 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String,
     validate: {
-      validator(v) {
-        return /https?:\/\/\S/.test(v);
-      },
+      validator: (value) => (validator.isURL(value, { require_protocol: true })),
       message: 'Ссылка указана некорректно',
     },
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
   },
 });
+
+const validateURL = (value) => {
+  if (!validator.isURL(value, { require_protocol: true })) {
+    throw new Error('Ссылка указана некорректно');
+  }
+  return value;
+};
 
 module.exports = mongoose.model('user', userSchema);
 
@@ -44,7 +54,7 @@ module.exports.userSchemaValidation = {
     password: Joi.string().required(),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().regex(/https?:\/\/\S/),
+    avatar: Joi.string().custom(validateURL),
   }),
 };
 
@@ -64,6 +74,6 @@ module.exports.userMainInfoSchemaValidation = {
 
 module.exports.userAvatarSchemaValidation = {
   body: Joi.object().keys({
-    avatar: Joi.string().required().regex(/https?:\/\/\S/),
+    avatar: Joi.string().required().custom(validateURL),
   }),
 };
